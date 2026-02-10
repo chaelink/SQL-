@@ -5,6 +5,8 @@
 - Onepass 소트 : 실행계획에 나타난 하나의 소트 오퍼레이션에 대해 정렬 대상 집합을 **디스크에 한번만 기록하고 작업을 마치는 것**
 - Multipass 소트 : 디스크에 여러 번 기록하는 것
 
+<br>
+
 소트 오퍼레이션 종류
 - Sort Aggregate : sum, min, max 등 집계 계산 / Sort Area를 가장 적게 사용
 - Sort Order By : 전체 데이터 정렬 / Sort Area를 가장 많이 사용
@@ -12,14 +14,44 @@
 - Hash group By : Sort 알고리즘 대신 Hash 알고리즘을 사용한다는 점만 다름
 - Sort Unique
 
+<br>
+
 Direct Path I/O
 - (Sort Area 부족) -> Sort Area에 정렬된 데이터를 Temp 테이블스페이스에 쓰고 이를 다시 읽어 들일 때 사용
 - I/o call이 완료될 때까지 대기 발생
     - direct path write temp
     - direct path read temp
 
+<br>
+
 커밋
 - 커밋 발생 시, 네트워크를 경유한 db call 발생
+
+<br>
+
+배치 프로그램
+= 부분범위처리 불가
+- 병렬 처리 가능
+- nologging 옵션은 insert 시에만 사용 가능
+- Array Processing 가능
+
+<br>
+
+데이터베이스 Call
+- 애플리케이션 커서를 캐싱하지 않는 한, 바인드 변수를 사용해도 Parse Call은 매번 일어남
+- DML은 Parse call 단계를 제외하면 모든 I/O가 Execute call 단계에서 발생
+- select 문은 대부분 i.o가 Fetch Call 단계에서 발생
+- Parse Call 단계에서 Recursive Call 발생 가능 (하드 파싱)
+- Execute Call 단계에서 Recursive Call 발생 가능
+- Fetch Call 단계에서 Recursive Call 발생 가능
+
+<br>
+
+Array Processing
+- 성능 효과의 핵심 부분 : 데이터베이스 call 감소
+- java 프로그램은 네트워크를 경유하므로, PL/SQL 보다 데이터베이스 부하가 더 큼, 따라서 Array Processing 적용 후의 성능 효과도 더 큼
+- Array 단위를 늘리면 성능이 좋아지지만 개선율 감소, 적정 크기로 설정해야 함
+- ArraySize를 작게 설정하거나, 조건절을 충족하는 데이터가 많아서 빨리 채울수록 응답속도가 빠름
 
 ---
 ### 헷갈리는 내용
@@ -37,9 +69,11 @@ Direct Path I/O
     - '=' 연산자가 아닌 조건절 컬럼은 데이터 분포를 고려해 추가 여부 결정 
 
 - 커밋, 서버 프로새스가 변경한 블록이 커밋 시점에 바로 데이터파일에 기록되지는 않는다. ?
-
-
-
+- 친절한 sql 튜닝에서 `INSERT INTO SELECT` 내용 다시 확인하기
+- 페이징 처리 기법을 사용하면 데이터베이스 Call 부하를 줄인다.
+    - 왜?, 페이징 지정 값까지만 출력하고 멈추기 때문에? 
+- I/O Call을 정확히 어디로 날리는 건지
+- 
 
 
 
